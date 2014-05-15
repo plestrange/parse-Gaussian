@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+#Patrick Lestrange
+
+use strict;
+use warnings;
+
+foreach (glob('*.log *.LOG *.out *.OUT')) { 
+
+	my @string = split /\./, $_;
+	my $file = $string[0];
+	system(`chde $file.log > $file.D2E`);
+	system(`plotDOS.exe $file.D2E partial alpha > part-alpha-$file.txt`);
+}
+

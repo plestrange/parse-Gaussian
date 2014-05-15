@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+#Patrick Lestrange
+
+use strict;
+use warnings;
+
+our $version = "0.2";
+our @command;
+
+##################
+## Main Program ##
+##################
+
+if ( !$ARGV[0] ){
+	help();
+} elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ) {
+	help();
+} else 
+	parse(@ARGV);	
+	mult_dos();
+} 
+
+#################
+## Subroutines ##
+#################
+
+sub help {
+	print "\nNAME\n "
+       . "\tMultDOS\n\n"
+		 . "DESCRIPTION\n"
+		 . "\tSets up multiple calls to plotDOS.exe to be run in the background\n\n"
+		 . "EXAMPLES\n"
+		 . "\t'multdos file.log partial alpha &'\n"
+		 . "VERSION\n"
+		 . "\t$version\n\n"
+		 . "AUTHOR\n"
+		 . "\tPatrick J Lestrange <plestran\@uw.edu>\n\n";
+
+}
+
+sub mult_dos {
+
+	foreach (glob('*.log *.LOG *.out *.OUT')) { 
+		my @string = split /\./, $_;
+		my $file = $string[0];
+		system(`sed 's/D+/E+/g;s/D-/E-/g;s/D 0/E00/' $file.log  > $file.D2E`); 
+		system(`plotDOS.exe $file.D2E partial alpha > part-alpha-$file.txt`);
+	}
+
+}
+
+sub parse {
+	my @inp = @_;
+	for (my $i = 0; $i < scalar @inp; $i++) {
+		$_ = $inp[$i];
+		if ($_ =~ /partial/){
+			$command[0] = 'partial';}
+		if ($_ =~ /total/){
+			$command[0] = 'total';}
+		if ($_ =~ /MO/){
+			$command[0] = 'MO';}
+		if ($_ =~ /TM/){
+			$command[0] = 'TM';}
+		if ($_ =~ /alpha/){
+			$command[1] = 'alpha';}
+		if ($_ =~ /beta/){
+			$command[1] = 'beta';}
+	}
+}

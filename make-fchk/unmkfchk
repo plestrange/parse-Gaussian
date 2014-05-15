@@ -1,0 +1,83 @@
+#!/usr/bin/perl -w
+#Patrick Lestrange
+
+use strict;
+use warnings;
+
+our $version = "0.1";
+
+=head1 NAME
+
+UnMkFchk
+
+=head1 DESCRIPTION
+
+Turns all the Gaussian formatted checkpoint files into checkpoint files.
+
+=head1 EXAMPLES
+
+'unmkfchk file.fchk'
+'unmkfchk *.fchk' (gets 'em all)
+
+=head1 VERSION
+
+0.1
+
+=head1 AUTHOR
+
+Patrick J Lestrange, E<lt>plestran@uw.eduE<gt>
+
+=begin comment
+
+VERSION HISTORY
+
+0.1	- Original version of script, based off MkFchk 
+
+=end comment
+
+=cut
+
+our ($chk, $fchk);
+
+##################
+## Main Program ##
+##################
+
+if ( !$ARGV[0] ){
+	help();
+} elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ) {
+	help();
+} elsif ( $ARGV[0] =~ m/.fchk/ ){
+	unmkfchk();
+} else { 
+	print "\nYou need a .fchk file as your argument!\n"
+		 . "Use '-h' or '--help' as an agrument to print help.\n\n";
+}
+
+#################
+## Subroutines ##
+#################
+
+sub help {
+	print "\nNAME\n "
+       . "\tUnMkFchk\n\n"
+		 . "DESCRIPTION\n"
+       . "\tTurns all the Gaussian formatted checkpoint files into checkpoint files.\n\n"
+		 . "EXAMPLES\n"
+		 . "\t'unmkfchk file.fchk'\n"
+		 . "\t'unmkfchk *.fchk' (gets 'em all)\n\n"
+		 . "VERSION\n"
+		 . "\t$version\n\n"
+		 . "AUTHOR\n"
+		 . "\tPatrick J Lestrange <plestran\@uw.edu>\n\n";
+}
+
+sub unmkfchk {
+	for (my $i = 0; $i < scalar @ARGV; $i++) {
+		my @string = split /\./, $ARGV[$i];
+		$fchk = 	"$string[0].fchk";
+		$chk = 	"$string[0].chk";
+		system("unfchk $fchk $chk"); 
+	}
+}
+

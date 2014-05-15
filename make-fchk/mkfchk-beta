@@ -1,0 +1,140 @@
+#!/usr/bin/perl -w
+#Patrick Lestrange
+
+use strict;
+use warnings;
+
+our $version = "0.3";
+
+=head1 NAME
+
+MkFchk
+
+=head1 DESCRIPTION
+
+Convert to and from Gaussian checkpoint and formatted checkpoint files.
+Default is to convert checkpoint to formatted checkpoint files.
+
+=head1 ARGUMENTS
+
+=over 5
+
+=item B<-u>
+
+Convert from formatted checkpoint files back to checkpoint files.
+
+=back
+
+=head1 EXAMPLES
+
+'mkfchk file.chk'
+'mkfchk *.chk' (gets 'em all)
+'mkfchk -u file.fchk'
+'mkfchk -u *.fchk' (gets 'em all)
+
+=head1 VERSION
+
+0.3
+
+=head1 AUTHOR
+
+Patrick J Lestrange, E<lt>plestran@uw.eduE<gt>
+
+=begin comment
+
+VERSION HISTORY
+
+0.1	- File names were explicitly defined within the script
+0.2	- Script requires no editing and will accept arguments
+0.3	- Can now convert from .fchk to .chk with -u argument
+
+=end comment
+
+=cut
+
+if ( !$ARGV[0]  ){
+#   exec("perldoc", $0) if ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" );
+	help();
+}elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ){
+	help();
+}
+
+our ($chk, $fchk, $flag);
+
+##################
+## Main Program ##
+##################
+
+$flag = 0;
+
+if ( scalar @ARGV > 0 ){
+	if ( $ARGV[0] eq "-u" ){
+		$flag = 1;
+		if ( $ARGV[1] =~ m/.fchk/ ){
+			mkfchk();
+		} else {
+			error(1);
+		}
+	} elsif ( $ARGV[0] =~ m/.chk/ ){
+		mkfchk();
+	} else {
+		error(2);
+	}
+} 
+
+#################
+## Subroutines ##
+#################
+
+sub error {
+	if ($_[0] == 1) {
+		print "\nWhen using the -u argument you need a .fchk file as your argument!\n"
+		 	 . "Use '-h' or '--help' as an agrument to print help.\n\n";
+	}
+	if ($_[0] == 2) {
+		print "\nYou need a .chk file as your argument!\n"
+			 . "Use '-h' or '--help' as an agrument to print help.\n\n";
+	}	
+}
+
+sub help {
+	print "\nNAME\n "
+       . "\tMkFchk\n\n"
+		 . "DESCRIPTION\n"
+		 . "\tConvert to and from Gaussian checkpoint and formatted checkpoint files.\n"
+		 . "\tDefault is go convert checkpoint to formattec checkpoint files.\n\n"
+		 . "ARGUMENTS\n"
+		 . "\t-h or --help\n"
+		 ." \t\tPrints the help page\n\n"
+		 . "\t-u\n"
+		 . "\t\tConvert from formatted checkpoint files back to checkpoint files.\n\n"
+		 . "EXAMPLES\n"
+		 . "\t'mkfchk file.chk'\n"
+		 . "\t'mkfchk *.chk' (gets 'em all)\n"
+		 . "\t'mkfchk -u file.fchk'\n"
+		 . "\t'mkfchk -u *.fchk' (gets 'em all)\n\n"
+		 . "VERSION\n"
+		 . "\t$version\n\n"
+		 . "AUTHOR\n"
+		 . "\tPatrick J Lestrange <plestran\@uw.edu>\n\n";
+}
+
+sub mkfchk {
+	if ($flag) {
+		for (my $i = 1; $i < scalar @ARGV; $i++) {
+			my @string = split /\./, $ARGV[$i];
+			$chk = 	"$string[0].chk";
+			$fchk = 	"$string[0].fchk";
+			system("unfchk $fchk $chk");
+		}
+	}
+	else {
+		for (my $i = 0; $i < scalar @ARGV; $i++) {
+			my @string = split /\./, $ARGV[$i];
+			$chk = 	"$string[0].chk";
+			$fchk = 	"$string[0].fchk";
+			system("formchk $chk $fchk"); 
+		}
+	}
+}
+

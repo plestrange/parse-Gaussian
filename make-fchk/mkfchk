@@ -1,0 +1,84 @@
+#!/usr/bin/perl -w
+#Patrick Lestrange
+
+use strict;
+use warnings;
+
+our $version = "0.2";
+
+=head1 NAME
+
+MkFchk
+
+=head1 DESCRIPTION
+
+Turns all the Gaussian checkpoint files into formatted checkpoint files.
+
+=head1 EXAMPLES
+
+'mkfchk file.chk'
+'mkfchk *.chk' (gets 'em all)
+
+=head1 VERSION
+
+0.2
+
+=head1 AUTHOR
+
+Patrick J Lestrange, E<lt>plestran@uw.eduE<gt>
+
+=begin comment
+
+VERSION HISTORY
+
+0.1	- File names were explicitly defined within the script
+0.2	- Script requires no editing and will accept arguments
+
+=end comment
+
+=cut
+
+our ($chk, $fchk);
+
+##################
+## Main Program ##
+##################
+
+if ( !$ARGV[0] ){
+	help();
+} elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ) {
+	help();
+} elsif ( $ARGV[0] =~ m/.chk/ ){
+	mkfchk();
+} else { 
+	print "\nYou need a .chk file as your argument!\n"
+		 . "Use '-h' or '--help' as an agrument to print help.\n\n";
+}
+
+#################
+## Subroutines ##
+#################
+
+sub help {
+	print "\nNAME\n "
+       . "\tMkFchk\n\n"
+		 . "DESCRIPTION\n"
+       . "\tTurns all the Gaussian checkpoint files into formatted checkpoint files.\n\n"
+		 . "EXAMPLES\n"
+		 . "\t'mkfchk file.chk'\n"
+		 . "\t'mkfchk *.chk' (gets 'em all)\n\n"
+		 . "VERSION\n"
+		 . "\t$version\n\n"
+		 . "AUTHOR\n"
+		 . "\tPatrick J Lestrange <plestran\@uw.edu>\n\n";
+}
+
+sub mkfchk {
+	for (my $i = 0; $i < scalar @ARGV; $i++) {
+		my @string = split /\./, $ARGV[$i];
+		$chk = 	"$string[0].chk";
+		$fchk = 	"$string[0].fchk";
+		system("formchk $chk $fchk"); 
+	}
+}
+

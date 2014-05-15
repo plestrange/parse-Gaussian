@@ -1,0 +1,53 @@
+#!/usr/bin/perl -w
+#Patrick Lestrange
+
+use strict;
+use warnings;
+use Tie::File;
+
+my (@lines,@site); 
+my ($chk, $fchk, $cube);
+my $base = 'CdS-CdSe-69-15-Mn';
+
+$site[0] = 12;
+$site[1] = 17;
+$site[2] = 23;
+$site[3] = 30;
+$site[4] = 36;
+$site[5] = 43;
+$site[6] = 47;
+$site[7] = 52;
+$site[8] = 65;
+$site[9] = 66;
+$site[10] = 72;
+$site[11] = 81;
+$site[12] = 82;
+$site[13] = 88;
+$site[14] = 98;
+$site[15] = 102;
+$site[16] = 111;
+$site[17] = 112;
+$site[18] = 122;
+$site[19] = 126;
+$site[20] = 132;
+$site[21] = 137;
+$site[22] = 142;
+$site[23] = 150;
+$site[24] = 154;
+$site[25] = 162;
+$site[26] = 168;
+$site[27] = 4;
+
+for (my $i = 0; $i < scalar @site; $i++){
+
+	$chk = 	"$base$site[$i]-e-afm.chk";
+	$fchk =	"$base$site[$i]-e-afm.fchk"; 
+	$cube = 	"$base$site[$i]-e-afm.cube";
+
+	system(`formchk $chk $fchk`); 
+	system(`cubegen 0 MO=813 $fchk $cube`); 
+	system(`~/bin/cube-com $cube $site[$i] >> cube.txt`);	
+	
+}
+
+

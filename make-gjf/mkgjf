@@ -1,0 +1,36 @@
+#!/usr/bin/perl 
+#Patrick Lestrange
+
+use strict;
+use warnings;
+use Tie::File;
+
+my (@file, @lines, @chk_name, @gjf_name,@links);
+my $mem 		= "%mem=12GB";
+my $cores	= "%nprocshared=8";
+my $linda	= "\@lndnodes.inc";
+$links[0] 	= "%subst l901 .";
+$links[1] 	= "%subst l930 .";
+
+#Makes new gjf file from chk file
+for(my $i = 0; $i < scalar @ARGV; $i++){
+	my @string = split /\./, $ARGV[$i];
+	$file[$i] = $string[0];
+	system(`newzmat -ichkxyz $file[$i].chk`);
+	system(`mv $file[$i].com $file[$i].gjf`);
+}
+#Adds the proper number of cores and specifies the chk file name
+for(my $i = 0; $i < scalar @ARGV; $i++){
+	$gjf_name[$i] = "$file[$i].gjf";
+	$chk_name[$i] = "%chk=$file[$i]";
+	tie @lines, 'Tie::File', $gjf_name[$i] or die;
+	unshift @lines, $linda;
+	unshift @lines, $cores;
+	for($i = 0; $i < scalar @links; $i++){
+		unshift @lines, $links[$i];
+	}
+	unshift @lines, $mem;
+	unshift @lines, $chk_name[$i];
+	untie @lines;
+}
+

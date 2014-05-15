@@ -1,0 +1,208 @@
+#!/usr/bin/perl -w
+#Patrick Lestrange
+
+use strict;
+use warnings;
+use Tie::File;
+
+=head1 NAME
+
+MkDope
+
+=head1 DESCRIPTION
+
+This program will accept the .gjf and .chk file for an undoped quantum dot. After being told
+the atoms numbers of the doping sites, the program will create all the necessary input files.
+The atom numbers are read from a .txt file in column form. The .chk files will also be copied
+so that they can be used as an initial guess. The keywords, memory allocation, subsituted
+links, and number of precessors are not touched.
+
+=head1 EXAMPLE
+
+'mkdope file.gjf'
+
+=head 1 VERSION
+
+0.2
+
+=head 1 AUTHOR
+
+Patrick J Lestrange, E<lt>plestran@uw.eduE<gt>
+
+=begin comment
+
+TO DO LIST
+
+DONE - Allow the user to upload a .txt file containing all the doping sites. 
+DONE - Be smarter about finding the first atom in the file
+DONE - Allow user to specify dopant as well as charge and multiplicity
+- Allow for all input to be given in argument list
+
+VERSION HISTORY
+
+0.1	- Original version of script
+		- Had to edit the script each time to work on other systems
+0.2 	- Prompts the user for various bits of info
+		- Accepts name of system, dopant, charge, multiplicity, and a file
+		  with all the doping sites.
+
+=end comment
+
+=cut
+
+our $version = "0.2";
+our (@lines,@site,$oldbase,$newbase);
+our ($chk,$gjf,$new_chk,$new_gjf);
+our (@hold,$num,$string,$type,$file);
+our ($metal,$charge,$mult,$first);
+
+##################
+## Main Program ##
+##################
+
+if ( !$ARGV[0] ){
+	help();
+} elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ) {
+	help();
+} elsif ( $ARGV[0] =~ m/.gjf/ or $ARGV[0] =~ m/.com/ ){
+	@hold = glob '*.chk';
+	if ( !$hold[0] ){
+		print "\nYou must have a .chk file in this directory.\n"
+			 . "Remember that this .chk file should have the same base name as the .com or .gjf file.\n\n"; 
+	} else {
+		@hold = split /\./, $ARGV[0];
+		$oldbase = $hold[0];
+		get_input();
+		mk_files();
+	}
+} else { 
+	print "\nYou need to add a .com or .gjf file as your argument!\n"
+		 . "Use '-h' or '--help' as an argument to print help.\n\n";
+} 
+
+#################
+## Subroutines ##
+#################
+
+sub get_input{
+
+	print "What type of qd is this? (default: CdSe/CdS): ";
+	$type = <STDIN>; chomp($type);
+	if ($type eq ""){
+		$type = "CdSe/CdS";
+	}
+
+	print "What is the dopant metal? (default: Mn): ";
+	$metal = <STDIN>; chomp($metal); 
+	if ($metal eq ""){
+		$metal = "Mn";
+	}
+
+	print "What should the charge be? (default: 0): ";
+	$charge = <STDIN>; chomp($charge);
+	if ($charge eq ""){
+		$charge = "0";
+	}
+
+	print "What should the multiplicity be? (default: 6): ";
+	$mult = <STDIN>; chomp($mult);
+	if ($mult eq ""){
+		$mult = "6";
+	}
+
+	print "On what line is the first atom? (no default): ";
+	$first = <STDIN>; chomp($first);
+	if ($first eq "") {
+		print "Come on, help a program out...\n";
+		print "On what line is the first atom? (last chance): ";
+		$first = <STDIN>; chomp($first);
+		if ($first eq "") {
+			die "You have failed me!!!\n";
+		}
+	}
+
+	print "Which file contains the doping sites? (no default): ";
+	$file = <STDIN>; chomp($file);
+	if ($file eq "") {
+		print "Does the file exist or not? Simple question.\n";	
+		print "Which file contains the doping sites? (last chance): ";
+		$file = <STDIN>; chomp($file);
+		if ($file eq ""){
+			die "And I had such high hopes for you.\n";
+		}
+	}
+	tie @lines, 'Tie::File', $file or die;
+		@site = @lines;
+	untie @lines;
+
+#	print "How many doping sites for this qd? (no default): ";
+#	$dope = <STDIN>; chomp($dope);
+#	if ($dope eq "") {
+#		print "Well there have to be some doping sites... \n";
+#		print "How many doping sites for this qd? (last chance): ";
+#		$dope = <STDIN>; chomp($dope);
+#		if ($dope eq "") {
+#			die "I am disappoint...\n";
+#		}
+#	}
+#	for (my $i = 0; $i < $dope; $i++){
+#		print "Atom position of doping site #$i: ";
+#		$site[$i] = <STDIN>; chomp($site[$i]);
+#		if ($site[$i] eq ""){
+#			print "You need to specify a number.\n";
+#			print "Try again.\n";
+#			print "Atom position of doping site #$i (last chance): ";
+#			$site[$i] = <STDIN>; chomp($site[$i]);
+#		}
+#	}
+
+	print "What is the basename for the new input files? (default: $oldbase-$metal): ";
+	$newbase = <STDIN>; chomp($newbase);
+	if ($newbase eq ""){
+		$newbase = "$oldbase-$metal";	
+	}
+}
+
+sub help {
+
+	print "\nNAME\n "
+       . "\tMkDope\n\n"
+		 . "DESCRIPTION\n"
+		 . "\tThis program will accept the .gjf and .chk file for an undoped quantum dot. After being told\n"
+		 . "\tthe atoms numbers of the doping sites, the program will create all the necessary input files.\n"
+		 . "\tThe atom numbers are read from a .txt file in column form. The .chk files will also be copied\n"
+		 . "\tso that they can be used as an initial guess. The keywords, memory allocation, subsituted\n"
+		 . "\tlinks, and number of precessors are not touched.\n\n"
+		 . "EXAMPLE\n"
+		 . "\t'mkdope file.gjf'\n\n"
+		 . "VERSION\n"
+		 . "\t$version\n\n"
+		 . "AUTHOR\n"
+		 . "\tPatrick J Lestrange <plestran\@uw.edu>\n\n";
+
+}
+
+sub mk_files {
+
+	for (my $i = 0; $i < scalar @site; $i++){
+	
+		print "Working on files for doping site #$site[$i]\n";	
+
+		$chk =	 	"$oldbase.chk";
+		$gjf = 		"$oldbase.gjf";
+		$new_gjf = 	"$newbase$site[$i].gjf";
+		$new_chk = 	"$newbase$site[$i].chk";	
+
+		system(`cp $chk $new_chk`);
+		system(`cp $gjf $new_gjf`);	
+	
+		tie @lines, 'Tie::File', $new_gjf or die;
+			$lines[0] = "%chk=$new_chk";
+			$lines[$first-4] = "$type doped with $metal at $site[$i]"; 
+			$lines[$first-2] = "$charge $mult";	
+			$num = $site[$i]+$first-2;
+			$string = substr $lines[$num], 0, 4, " $metal ";
+		untie @lines;
+	}
+}
+

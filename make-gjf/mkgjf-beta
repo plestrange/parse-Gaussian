@@ -1,0 +1,96 @@
+#!/usr/bin/perl 
+#Patrick Lestrange
+
+use strict;
+use warnings;
+use Tie::File;
+
+our $version = "0.2";
+
+=head1 NAME
+
+MkGJF
+
+=head1 DESCRIPTION
+
+This program will accept the a one or several .chk files and build Gaussian
+input files using newzmat. The 
+
+=head1 EXAMPLE
+
+'mkgjf file.chk'
+'mkgjf *.chk' (gets 'em all)
+
+=head1 VERSION
+
+0.2
+
+=head1 AUTHOR
+
+Patrick J Lestrange, E<lt>plestran@uw.eduE<gt>
+
+=begin comment
+
+VERSION HISTORY
+
+0.1	- Original version of script
+0.2	- Added help screen and more documentation
+
+=end comment
+
+=cut
+
+my (@file, @lines, @chk_name, @gjf_name,@links);
+my $mem 		= "%mem=12GB";
+my $cores	= "%nprocshared=8";
+my $linda	= "\@lndnodes.inc";
+$links[0] 	= "%subst l901 .";
+$links[1] 	= "%subst l930 .";
+
+##################
+## Main Program ##
+##################
+
+if ( !$ARGV[0] ){
+	help();
+} elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ) {
+	help();
+} elsif ( $ARGV[0] =~ m/.chk/ ){
+	mkgjf();
+} else { 
+	print "\nYou need a .chk file as your argument!\n"
+		 . "Use '-h' or '--help' as an agrument to print help.\n\n";
+}
+
+#################
+## Subroutines ##
+#################
+
+sub help{
+
+}
+
+sub mkgjf{
+
+	#Makes new gjf file from chk file
+	for(my $i = 0; $i < scalar @ARGV; $i++){
+		my @string = split /\./, $ARGV[$i];
+		$file[$i] = $string[0];
+		system(`newzmat -ichkxyz $file[$i].chk $file[$i].gjf`);
+	}
+	#Adds the proper number of cores and specifies the chk file name
+	for(my $i = 0; $i < scalar @ARGV; $i++){
+		$gjf_name[$i] = "$file[$i].gjf";
+		$chk_name[$i] = "%chk=$file[$i]";
+		tie @lines, 'Tie::File', $gjf_name[$i] or die;
+		unshift @lines, $linda;
+		unshift @lines, $cores;
+		for($i = 0; $i < scalar @links; $i++){
+			unshift @lines, $links[$i];
+		}
+		unshift @lines, $mem;
+		unshift @lines, $chk_name[$i];
+		untie @lines;
+	}
+}
+

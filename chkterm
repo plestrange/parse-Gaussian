@@ -1,0 +1,86 @@
+#!/usr/bin/perl
+#Patrick Lestrange
+
+use strict;
+use warnings;
+
+=head1 NAME
+
+ChkTerm
+
+=head1 DESCRIPTION
+
+Checks for normal termination in Gaussian output files. 
+
+=head1 EXAMPLES
+
+'chkterm file.log'
+'chkterm *.log' (gets 'em all)
+
+=head1 VERSION
+
+0.3
+
+=head1 AUTHOR
+
+Patrick J Lestrange, E<lt>plestran@uw.eduE<gt>
+
+=begin comment
+
+VERSION HISTORY
+
+0.1	- Original version of script
+		- Globbed for all the .log and .out files in a directory
+0.2	- User determines which files to look at by passing arguments
+0.3	- Use the Unix command 'tail' instead of the Tie::File package (way faster)
+
+=end comment
+
+=cut
+
+our $version = "0.3";
+
+##################
+## Main Program ##
+##################
+
+if ( !$ARGV[0] ){
+	help();
+} elsif ( $ARGV[0] eq "-h" or $ARGV[0] eq "--help" ) {
+	help();
+} elsif ( $ARGV[0] =~ m/.log/ or $ARGV[0] =~ m/.out/ ){
+	chk_term();
+} else { 
+	print "\nYou need a .log or .out file as your argument!\n"
+		 . "Use '-h' or '--help' as an agrument to print help.\n\n";
+}
+
+#################
+## Subroutines ##
+#################
+
+sub chk_term {
+	for(my $i = 0; $i < scalar @ARGV; $i++){
+		my $last = `tail -n 1 $ARGV[$i]`; 
+		if ($last !~ /Normal termination/){
+			print "File '$ARGV[$i]' did not terminate properly!\n";
+		}
+		else {print "Normal termination of file: '$ARGV[$i]'\n";}
+	}
+}
+
+sub help {
+	print "\nNAME\n "
+       . "\tChkTerm\n\n"
+		 . "DESCRIPTION\n"
+		 . "\tChecks for normal termination in Gaussian output files.\n\n"
+		 . "EXAMPLES\n"
+		 . "\t'chkterm file.log'\n"
+		 . "\t'chkterm *.log' (gets 'em all)\n\n"
+		 . "VERSION\n"
+		 . "\t$version\n\n"
+		 . "AUTHOR\n"
+		 . "\tPatrick J Lestrange <plestran\@uw.edu>\n\n";
+
+}
+
